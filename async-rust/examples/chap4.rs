@@ -1,12 +1,9 @@
-
 // 1. Pin<P> is a wrapper that prevents the pointee from being moved —
 //    essential for self-referential state machines
 // 2. Box::pin() is the safe, easy default for pinning futures on the heap
 // 3. tokio::pin!() pins on the stack — you can move the Pin<&mut> wrapper, but the underlying future stays put
 // 4. Unpin is an auto-trait opt-out: types that implement Unpin can be moved even
 //    when pinned (most types are Unpin; async blocks are not)
-
-
 
 /*
 // 1. poll() signature — all futures are polled through Pin

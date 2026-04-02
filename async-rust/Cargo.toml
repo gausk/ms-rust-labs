@@ -3,5 +3,13 @@ name = "async-rust"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+smol = ["dep:smol"]
+default = []
+async-std = ["dep:async-std"]
+
 [dependencies]
+async-std = { version = "1.13.2", optional = true, features = ["attributes"] }
+futures = "0.3.32"
+smol = { version = "2.0.2", optional = true }
 tokio = { workspace = true }

@@ -47,7 +47,11 @@ impl Future for TimerFuture {
     }
 }
 
-pub struct Join<A, B> where A: Future, B: Future {
+pub struct Join<A, B>
+where
+    A: Future,
+    B: Future,
+{
     a: MaybeDone<A>,
     b: MaybeDone<B>,
 }
@@ -55,7 +59,7 @@ pub struct Join<A, B> where A: Future, B: Future {
 enum MaybeDone<F: Future> {
     Pending(F),
     Done(F::Output),
-    Taken // Output has been taken
+    Taken, // Output has been taken
 }
 
 // MaybeDone<F> stores F::Output, which the compiler can't prove
@@ -64,7 +68,11 @@ enum MaybeDone<F: Future> {
 // by hand is safe and lets us call self.get_mut() in poll().
 impl<A: Future + Unpin, B: Future + Unpin> Unpin for Join<A, B> {}
 
-impl<A, B> Join<A, B> where A: Future, B: Future {
+impl<A, B> Join<A, B>
+where
+    A: Future,
+    B: Future,
+{
     pub fn new(a: A, b: B) -> Self {
         Join {
             a: MaybeDone::Pending(a),
@@ -73,8 +81,11 @@ impl<A, B> Join<A, B> where A: Future, B: Future {
     }
 }
 
-
-impl<A, B> Future for Join<A, B> where A: Future + Unpin, B: Future + Unpin {
+impl<A, B> Future for Join<A, B>
+where
+    A: Future + Unpin,
+    B: Future + Unpin,
+{
     type Output = (A::Output, B::Output);
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
@@ -108,7 +119,7 @@ impl<A, B> Future for Join<A, B> where A: Future + Unpin, B: Future + Unpin {
                 };
                 Poll::Ready((a_val, b_val))
             }
-            _ => Poll::Pending
+            _ => Poll::Pending,
         }
     }
 }
@@ -129,18 +140,20 @@ pub struct Select<A, B> {
     b: B,
 }
 
-impl<A, B> Select<A, B> where
+impl<A, B> Select<A, B>
+where
     A: Future + Unpin,
-    B: Future + Unpin
+    B: Future + Unpin,
 {
     pub fn new(a: A, b: B) -> Self {
         Select { a, b }
     }
 }
 
-impl<A, B> Future for Select<A, B> where
+impl<A, B> Future for Select<A, B>
+where
     A: Future + Unpin,
-    B: Future + Unpin
+    B: Future + Unpin,
 {
     type Output = Either<A::Output, B::Output>;
 
@@ -165,7 +178,8 @@ impl<A, B> Future for Select<A, B> where
 //     Either::Right(()) => println!("Request timed out!"),
 // }
 
-struct RetryFuture<F, Fut, T, E> where
+struct RetryFuture<F, Fut, T, E>
+where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>> + Unpin,
 {
@@ -175,7 +189,8 @@ struct RetryFuture<F, Fut, T, E> where
     last_err: Option<E>,
 }
 
-impl<F, Fut, T, E> RetryFuture<F, Fut, T, E> where
+impl<F, Fut, T, E> RetryFuture<F, Fut, T, E>
+where
     F: Fn() -> Fut,
     Fut: Future<Output = Result<T, E>> + Unpin,
 {
@@ -190,7 +205,8 @@ impl<F, Fut, T, E> RetryFuture<F, Fut, T, E> where
     }
 }
 
-impl<F, Fut, T, E> Future for RetryFuture<F, Fut, T, E> where
+impl<F, Fut, T, E> Future for RetryFuture<F, Fut, T, E>
+where
     F: Fn() -> Fut + Unpin,
     Fut: Future<Output = Result<T, E>> + Unpin,
     T: Unpin,

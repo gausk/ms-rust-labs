@@ -18,14 +18,9 @@ enum FetchTwoPageStateMachine {
     Start,
 
     // State 1: Waiting for page1, holding the future
-    WaitingPage1 {
-        fut1: HttpGetFuture,
-    },
+    WaitingPage1 { fut1: HttpGetFuture },
     // state 2: Got page1, waiting for page2
-    WaitingPage2 {
-        page1: String,
-        fut2: HttpGetFuture,
-    },
+    WaitingPage2 { page1: String, fut2: HttpGetFuture },
     // Terminal state
     Completed,
 }

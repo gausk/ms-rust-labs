@@ -1,8 +1,6 @@
 [workspace]
 resolver = "3"
-members = [
-    "async-rust"
-]
+members = ["async-rust"]
 
 [workspace.dependencies]
-tokio = {  version = "1.50.0", features = ["rt-multi-thread", "macros"] }
+tokio = { version = "1.50.0", features = ["rt-multi-thread", "macros", "time"] }
