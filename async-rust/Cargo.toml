@@ -13,3 +13,5 @@ async-std = { version = "1.13.2", optional = true, features = ["attributes"] }
 futures = "0.3.32"
 smol = { version = "2.0.2", optional = true }
 tokio = { workspace = true }
+trait-variant = "0.1.2"
+async-trait = "0.1.89"
