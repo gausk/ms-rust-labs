@@ -23,13 +23,15 @@ jobs:
     - name: Run all examples
       run: |
         cargo metadata --format-version 1 \
-        | jq -r '
-            .packages[]
-            | .name as $pkg
-            | .targets[]
-            | select(.kind[] == "example")
-            | "\($pkg) \(.name)"' \
-        | while read -r pkg example; do
-            echo "Running example $example in $pkg"
-            cargo run -p "$pkg" --example "$example"
+          | jq -r '
+              .workspace_members as $members
+              | .packages[]
+              | select(.id as $id | any($members[]; . == $id))
+              | .name as $pkg
+              | .targets[]
+              | select(.kind[] == "example")
+              | "\($pkg) \(.name)"' \
+          | while read -r pkg example; do
+              echo "Running example $example in $pkg"
+              cargo run -p "$pkg" --example "$example"
           done
