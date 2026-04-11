@@ -10,8 +10,10 @@ async-std = ["dep:async-std"]
 
 [dependencies]
 async-std = { version = "1.13.2", optional = true, features = ["attributes"] }
+async-stream = "0.3.6"
+async-trait = "0.1.89"
 futures = "0.3.32"
 smol = { version = "2.0.2", optional = true }
 tokio = { workspace = true }
+tokio-stream = "0.1.18"
 trait-variant = "0.1.2"
-async-trait = "0.1.89"
