@@ -1,7 +1,11 @@
 use async_stream::{stream, try_stream};
 use futures::stream::{self, StreamExt};
 use futures::{Stream, pin_mut};
+use std::ops::Not;
 use std::time::Duration;
+use tokio::io::{
+    AsyncBufRead, AsyncBufReadExt, AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt, BufReader,
+};
 use tokio::net::{TcpListener, TcpStream};
 use tokio::time::sleep;
 use tokio_stream::wrappers::{IntervalStream, ReceiverStream};
@@ -143,4 +147,64 @@ async fn stats_aggregator<S: Stream<Item = f64>>(stream: S) -> Stats {
             },
         )
         .await
+}
+
+async fn io_examples() -> tokio::io::Result<()> {
+    let mut stream = TcpStream::connect("127.0.0.1:8080").await?;
+
+    // AsyncWriteExt: write_all, write_u32, write_buf
+    stream.write_all(b"GET / HTTP/1.0\r\n\r\n").await?;
+
+    // AsyncReadExt: read, read_exact, read_to_end, read_to_string
+    let mut buf = Vec::new();
+    stream.read_to_end(&mut buf).await?;
+
+    // AsyncBufReadExt: read_line, lines(), split()
+    let file = tokio::fs::File::open("Cargo.toml").await?;
+    let reader = BufReader::new(file);
+    let mut lines = reader.lines();
+    while let Ok(Some(line)) = lines.next_line().await {
+        println!("{line:?}");
+    }
+    Ok(())
+}
+
+// A length prefixed protocol: [u32: length][payload bytes]
+struct FramedStream<T> {
+    inner: T,
+}
+
+impl<T: AsyncRead + Unpin> FramedStream<T> {
+    async fn read_frame(&mut self) -> tokio::io::Result<Vec<u8>> {
+        let length = self.inner.read_u32().await?;
+        let mut buf = vec![0u8; length as usize];
+        self.inner.read_buf(&mut buf).await?;
+        Ok(buf)
+    }
+}
+
+impl<T: AsyncWrite + Unpin> FramedStream<T> {
+    async fn write_frame(&mut self, buf: &[u8]) -> tokio::io::Result<()> {
+        self.inner.write_u32(buf.len() as u32).await?;
+        self.inner.write_all(buf).await?;
+        self.inner.flush().await?;
+        Ok(())
+    }
+}
+
+struct LineCounter<T> {
+    inner: T,
+}
+
+impl<T: AsyncBufRead + Unpin> LineCounter<T> {
+    async fn line_count(&mut self) -> usize {
+        let mut lines = (&mut self.inner).lines();
+        let mut count = 0;
+        while let Ok(Some(line)) = lines.next_line().await {
+            if line.is_empty().not() {
+                count += 1;
+            }
+        }
+        count
+    }
 }
