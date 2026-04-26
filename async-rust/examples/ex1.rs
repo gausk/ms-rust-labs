@@ -9,15 +9,18 @@ Accept connections and echo back each line
 Handle client disconnections gracefully
 Print a log when clients connect/disconnect
  */
-use std::time::Duration;
 use futures::future::join_all;
+use std::time::Duration;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
 use tokio::net::{TcpListener, TcpStream};
-use tokio::{select, signal};
 use tokio::sync::watch;
 use tokio::time::sleep;
+use tokio::{select, signal};
 
-async fn process_accept(mut shutdown_rx: watch::Receiver<bool>, mut conn: TcpStream) -> tokio::io::Result<()> {
+async fn process_accept(
+    mut shutdown_rx: watch::Receiver<bool>,
+    mut conn: TcpStream,
+) -> tokio::io::Result<()> {
     println!("Accepted new connection");
     let (reader, mut writer) = conn.into_split();
     let mut reader = BufReader::new(reader);
@@ -91,7 +94,6 @@ async fn main_server() {
         Err(_) => eprintln!("server shutdown timed out..."),
     }
 }
-
 
 #[tokio::main]
 async fn main() {
