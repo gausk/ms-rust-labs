@@ -1,6 +1,9 @@
 [workspace]
 resolver = "3"
-members = ["async-rust"]
+members = [
+    "async-chat-server",
+    "async-rust"
+]
 
 [workspace.dependencies]
 tokio = { version = "1.51.1", features = ["rt-multi-thread", "macros", "time", "sync", "net", "fs", "io-util", "tracing", "signal"] }
